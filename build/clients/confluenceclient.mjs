@@ -32,7 +32,7 @@ export async function fetchConfluenceDocsWithMeta(tags) {
       }
     });
 
-    console.log("🔍 Confluence response:", response.status, response.statusText);
+    console.log("Confluence response:", response.status, response.statusText);
 
     if (!response.ok) {
       throw new Error(`Confluence fetch error: ${response.status}`);
