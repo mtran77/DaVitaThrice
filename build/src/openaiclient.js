@@ -8,49 +8,117 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import api from '@forge/api';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-export async function generateResponse(question, context) {
-  console.log("Waiting 5 seconds before calling OpenAI...");
-  await wait(5000); // Add a 5-second delay before making the API call
-  // Combine user input + docs and create a prompt for OpenAI
-  const prompt = `User question: ${question}\n\nRelevant documents:\n${context}\n\nProvide a detailed answer with references.`;
-  // add more detailed prompting as we go
-  
-  //Chat Completion endpoint.
+// approved tags (move to a config file or database later)
+const availableTags = [
+  "training", "compliance", "general-medical", "kidney-disease", 
+  "kidney-dialysis", "medical-manual", "meeting_minutes", "scheduling"
+];
+
+//delay function - helps with fetch timeouts
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+//Get relevant tags from OpenAI based on question
+export async function determineRelevantTags(question) {
   const payload = {
     model: 'gpt-4o',
     messages: [
-      { role: 'system', content: 'You are a helpful assistant that provides clear answers based on provided context.' },
-      /*messages: [
-      { role: 'system', content: 'You are an AI-powered assistant designed specifically for DaVita. Your sole source of information is the content stored in Confluence—this includes Confluence pages, PDFs, Word documents, and any other documents integrated via the Forge backend. Every answer you provide must be derived exclusively from these documents. When responding to user queries, adhere to the following guidelines:Document-Based Answers: Search, retrieve, and synthesize information solely from the provided Confluence documents and related files. Do not incorporate external knowledge or data; your answers must rely exclusively on the documents stored in Confluence. Answer Composition: Provide text-based responses that clearly explain the answer. When relevant, reference and describe visual elements (charts, images, tables) that exist within the documents. Include direct links or references to the specific Confluence pages or document sections used to formulate your answer, ensuring users can verify the source material. Contextual Synthesis: Draw connections between different parts of the documents to offer comprehensive, context-rich answers that go beyond simple keyword matching. Ensure that your responses clarify and elaborate on the underlying relationships and processes described in the documents. Security & Integrity: Follow all security protocols (e.g., no writeback to the model) and ensure that sensitive data remains protected within the DaVita ecosystem. Maintain data integrity by strictly using the internal Confluence data without integrating external information. Performance & Scalability: Be prepared to handle queries from multiple users simultaneously without degrading the quality or accuracy of your responses. Your mission is to serve as a fast, reliable, and contextually aware assistant that helps DaVita employees quickly locate and understand critical information from their internal documentation. Always ensure that every answer is directly traceable to a Confluence document or related file.' },
-*/
-      { role: 'user', content: prompt }
+      {
+        role: 'system',
+        content: 'Given a user question, return the most relevant tags from the provided list. Respond with a comma-separated list of tag names only.'
+      },
+      {
+        role: 'user',
+        content: `User question: "${question}"\nAvailable tags: ${availableTags.join(", ")}\nWhich tags are relevant?`
+      }
     ]
   };
 
-  // call POST request to OpenAI's API - payload
   try {
-    const response = await api.fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify(payload)
     });
 
-  // // if call fails
-  // if (!response.ok) {
-  //   console.error('there was an error calling OpenAI API:', response.status, response.statusText);
-  //   throw new Error(`Error calling OpenAI API: ${response.status}`);
-  // }
+    if (!response.ok) {
+      console.error("Error calling OpenAI (tag detection):", response.status, response.statusText);
+      return [];
+    }
 
-  const data = await response.json();
-    return data.choices[0]?.message?.content || "I couldn't generate a response. Check error logs.";
-  } 
-  catch (error) {
-    console.error("OpenAI API request failed:", error);
+    const data = await response.json();
+    const extractedTags = data.choices[0].message.content.split(",").map(tag => tag.trim());
+    const validTags = extractedTags.filter(tag => availableTags.includes(tag));
+    console.log("Relevant tags identified:", validTags);
+    return validTags;
+  } catch (error) {
+    console.error("Error in determineRelevantTags:", error);
+    return [];
+  }
+}
+
+//Use documents + question to generate final response
+export async function fetchOpenAIResponse(question, context) {
+  if (!context) {
+    console.log("No context provided. Skipping OpenAI response.");
+    return "No relevant documents found.";
+  }
+
+  const prompt = `User question: ${question}\n\nRelevant documents:\n${context}\n\nProvide a short and concise answer based only on these documents. 1-4 sentences. Include the titles of all documents used to form this answer.`;
+
+  const payload = {
+    model: 'gpt-4o',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a helpful assistant providing clear answers based on provided documents only.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ]
+  };
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      console.error("Error calling OpenAI (final response):", response.status, response.statusText);
+      return "There was an issue generating a response.";
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || "I couldn't generate a response.";
+  } catch (error) {
+    console.error("Error in fetchOpenAIResponse:", error);
     return "There was an issue retrieving a response.";
+  }
+}
+
+//Full process from question to response
+export async function generateResponse(question, context) {
+  console.log("Waiting 5 seconds before calling OpenAI...");
+  await wait(5000);
+
+  try {
+    const answer = await fetchOpenAIResponse(question, context);
+    return answer;
+  } catch (error) {
+    console.error("Error in generateResponse:", error);
+    return "There was a problem generating the answer.";
   }
 }
