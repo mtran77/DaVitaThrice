@@ -2,8 +2,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import readline from 'readline';
-import { determineRelevantTags, fetchOpenAIResponse } from './openaiclient.js';
-import { fetchConfluenceDocsWithMeta } from './confluenceclient.js';
+import { determineRelevantTags, fetchOpenAIResponse } from './openaiclient.mjs';
+import { fetchConfluenceDocsWithMeta } from './confluenceclient.mjs';
 
 
 // Prompt user for input
