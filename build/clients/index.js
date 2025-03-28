@@ -1,7 +1,5 @@
-// @ts-nocheck
-
-const EmployeeSelectorBtn = document.querySelector('#Employee-selector')
-const DaVitaGPTSelectorBtn = document.querySelector('#DaVitaGPT-selector')
+// const EmployeeSelectorBtn = document.querySelector('#Employee-selector')
+// const DaVitaGPTSelectorBtn = document.querySelector('#DaVitaGPT-selector')
 const chatHeader = document.querySelector('.chat-header')
 const chatMessages = document.querySelector('.chat-messages')
 const chatInputForm = document.querySelector('.chat-input-form')
@@ -24,6 +22,7 @@ window.onload = () => {
   })
 }
 
+// default profile 
 let messageSender = 'Employee'
 
 // const updateMessageSender = (name) => {
