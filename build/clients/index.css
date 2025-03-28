@@ -17,14 +17,14 @@ body {
   .button:active {
     transform: translateY(2px);
   }
-  
+/*   
   .person-selector {
     display: flex;
     justify-content: center;
     gap: 1em;
     margin: 3em auto 1em;
     max-width: 40em;
-  }
+  } */
   
   /* .person-selector-button {
     width: 100%;
@@ -103,6 +103,7 @@ body {
   }
   
   .chat-input-form {
+    max-width: 37.5em;
     display: flex;
     align-items: center;
     margin-top: 2em;
