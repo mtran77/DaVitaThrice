@@ -4,7 +4,6 @@
 //import fetch from 'node-fetch';
 //____________________________
 
-
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -123,3 +122,13 @@ export async function generateResponse(question, context) {
     return "There was a problem generating the answer.";
   }
 }
+
+// ! unable to use this file as a script tag in HTML bc it is using CORS not http
+console.log('from openaiclient')
+// ?? testing zone
+window.addEventListener("newMessage", (event) => {
+  const message = event.detail;  // Get the message from the event's `detail`
+  console.log("Received in MJS:", message.text);  // Output the message text
+});
+
+//?? testing zone end 
