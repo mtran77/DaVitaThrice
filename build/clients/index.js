@@ -25,23 +25,23 @@ window.onload = () => {
 // default profile 
 let messageSender = 'Employee'
 
-const updateMessageSender = (name) => {
-  messageSender = name
-  chatHeader.innerText = `${messageSender} chatting...`
-  chatInput.placeholder = `Type here, ${messageSender}...`
+// const updateMessageSender = (name) => {
+//   messageSender = name
+//   chatHeader.innerText = `${messageSender} chatting...`
+//   chatInput.placeholder = `Type here, ${messageSender}...`
 
-  if (name === 'Employee') {
-    EmployeeSelectorBtn.classList.add('active-person')
-    DaVitaGPTSelectorBtn.classList.remove('active-person')
-  }
-  if (name === 'DaVitaGPT') {
-    DaVitaGPTSelectorBtn.classList.add('active-person')
-    EmployeeSelectorBtn.classList.remove('active-person')
-  }
+//   if (name === 'Employee') {
+//     EmployeeSelectorBtn.classList.add('active-person')
+//     DaVitaGPTSelectorBtn.classList.remove('active-person')
+//   }
+//   if (name === 'DaVitaGPT') {
+//     DaVitaGPTSelectorBtn.classList.add('active-person')
+//     EmployeeSelectorBtn.classList.remove('active-person')
+//   }
 
-  /* auto-focus the input field */
-  chatInput.focus()
-}
+//   /* auto-focus the input field */
+//   chatInput.focus()
+// }
 
 // EmployeeSelectorBtn.onclick = () => updateMessageSender('Employee')
 // DaVitaGPTSelectorBtn.onclick = () => updateMessageSender('DaVitaGPT')
