@@ -21,6 +21,9 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
+
+
 //Get relevant tags from OpenAI based on question
 export async function determineRelevantTags(question) {
   const payload = {
@@ -123,12 +126,3 @@ export async function generateResponse(question, context) {
   }
 }
 
-// ! unable to use this file as a script tag in HTML bc it is using CORS not http
-console.log('from openaiclient')
-// ?? testing zone
-window.addEventListener("newMessage", (event) => {
-  const message = event.detail;  // Get the message from the event's `detail`
-  console.log("Received in MJS:", message.text);  // Output the message text
-});
-
-//?? testing zone end 
