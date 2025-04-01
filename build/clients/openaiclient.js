@@ -21,9 +21,6 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
-
-
 //Get relevant tags from OpenAI based on question
 export async function determineRelevantTags(question) {
   const payload = {

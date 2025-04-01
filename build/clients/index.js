@@ -1,4 +1,4 @@
-import runQuery from './aiquery.js'
+// import runQuery from './aiquery.js'
 // const EmployeeSelectorBtn = document.querySelector('#Employee-selector')
 // const DaVitaGPTSelectorBtn = document.querySelector('#DaVitaGPT-selector')
 const chatHeader = document.querySelector('.chat-header')
@@ -47,36 +47,87 @@ let messageSender = 'Employee'
 // EmployeeSelectorBtn.onclick = () => updateMessageSender('Employee')
 // DaVitaGPTSelectorBtn.onclick = () => updateMessageSender('DaVitaGPT')
 
-const sendMessage = (e) => {
+// const sendMessage = (e) => {
 
-  e.preventDefault()
+//   e.preventDefault()
 
-  const timestamp = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+//   const timestamp = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
   
+//   const message = {
+//     sender: messageSender,
+//     text: chatInput.value,
+//     timestamp,
+//   }
+
+//   // Save message to local storage
+//   messages.push(message)
+//   localStorage.setItem('messages', JSON.stringify(messages))
+
+//   // For MJS file
+//   window.dispatchEvent(new CustomEvent("newMessage", { detail: message }));
+
+//   // Add message to DOM 
+//   chatMessages.innerHTML += createChatMessageElement(message)
+
+//   // Clear input field 
+//   chatInputForm.reset()
+
+//   // Scroll to bottom of chat messages 
+//   chatMessages.scrollTop = chatMessages.scrollHeight
+
+//   runQuery(message);
+// }
+
+// * testing 
+const sendMessage = async (e) => {
+  e.preventDefault();
+
+  const timestamp = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+
   const message = {
     sender: messageSender,
     text: chatInput.value,
     timestamp,
-  }
+  };
 
   // Save message to local storage
-  messages.push(message)
-  localStorage.setItem('messages', JSON.stringify(messages))
+  messages.push(message);
+  localStorage.setItem('messages', JSON.stringify(messages));
 
-  // For MJS file
-  window.dispatchEvent(new CustomEvent("newMessage", { detail: message }));
+  // Add message to DOM
+  chatMessages.innerHTML += createChatMessageElement(message);
 
-  // Add message to DOM 
-  chatMessages.innerHTML += createChatMessageElement(message)
+  // Clear input field
+  chatInputForm.reset();
 
-  // Clear input field 
-  chatInputForm.reset()
+  // Scroll to bottom of chat messages
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 
-  // Scroll to bottom of chat messages 
-  chatMessages.scrollTop = chatMessages.scrollHeight
+  // Run AI Query (Step 1: Determine tags, Step 2: Get documents, Step 3: Get OpenAI response)
+  try {
+    const response = await runQuery(message.text);
 
-  runQuery(message);
-}
+    // Add the AI response to the chat
+    chatMessages.innerHTML += createChatMessageElement({
+      sender: 'DaVitaGPT',
+      text: response.answer,
+      timestamp,
+    });
+
+    // Show sources (optional)
+    response.sources.forEach(src => {
+      console.log(`Source: ${src.title} - ${src.url}`);
+    });
+
+    // Scroll to bottom of chat messages
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  } catch (error) {
+    console.error('Error during query execution:', error);
+  }
+};
+// * testing
+
 
 chatInputForm.addEventListener('submit', sendMessage)
 

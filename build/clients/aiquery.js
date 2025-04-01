@@ -1,59 +1,163 @@
-import dotenv from 'dotenv';
-dotenv.config();
+// aiquery.js (adapted for the browser)
 
-// import readline from 'readline';
-import { determineRelevantTags, fetchOpenAIResponse } from './openaiclient.js';
-import { fetchConfluenceDocsWithMeta } from './confluenceclient.js';
+// Fetch OpenAI response with tags
+async function determineRelevantTags(question) {
+  const OPENAI_API_KEY = 'your-openai-api-key'; // Directly set your API key or load securely
 
+  const availableTags = [
+    "training", "compliance", "general-medical", "kidney-disease",
+    "kidney-dialysis", "medical-manual", "meeting_minutes", "scheduling"
+  ];
 
-//tester 
-console.log("inside aiquery!")
+  const payload = {
+    model: 'gpt-4o',
+    messages: [
+      {
+        role: 'system',
+        content: 'Given a user question, return the most relevant tags from the provided list. Respond with a comma-separated list of tag names only.'
+      },
+      {
+        role: 'user',
+        content: `User question: "${question}"\nAvailable tags: ${availableTags.join(", ")}\nWhich tags are relevant?`
+      }
+    ]
+  };
 
-// Prompt user for input
-export default function askQuestion(query) {
-  // const rl = readline.createInterface({
-  //   input: process.stdin,
-  //   output: process.stdout
-  // });
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
 
-  return new Promise(resolve => rl.question(query, answer => {
-    // rl.close();
-    resolve(answer);
-  }));
+    if (!response.ok) {
+      console.error("Error calling OpenAI (tag detection):", response.status, response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    const extractedTags = data.choices[0].message.content.split(",").map(tag => tag.trim());
+    return extractedTags;
+  } catch (error) {
+    console.error("Error in determineRelevantTags:", error);
+    return [];
+  }
 }
 
-async function runQuery(userMessage) {
-  // console.log("Danny Davita - Terminal Integration Test");
-  // const question = await askQuestion(userMessage);
-  const question = userMessage;
+// Fetch documents from Confluence
+async function fetchConfluenceDocsWithMeta(tags) {
+  const CONFLUENCE_BASE_URL = 'https://miscapstones25.atlassian.net/wiki/rest/api';
+  const AUTH_HEADER = `Basic ${btoa('your-email:your-api-token')}`; // Encoding email and API token
 
-  // console.log("\nStep 1: Determining relevant tags from OpenAI...");
-  const tags = await determineRelevantTags(question);
+  const cqlQuery = tags.map(tag => `label = "${tag}"`).join(' OR ');
+  const encodedCql = encodeURIComponent(`(${cqlQuery}) ORDER BY lastModified DESC`);
+  const url = `${CONFLUENCE_BASE_URL}/content/search?limit=5&cql=${encodedCql}&expand=space,body.view`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': AUTH_HEADER
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Confluence fetch error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const docContents = [];
+    const sources = [];
+
+    for (const doc of data.results) {
+      const title = doc.title || 'Untitled';
+      const body = doc.body?.view?.value || '';
+      const webUrl = `https://miscapstones25.atlassian.net/wiki${doc._links.webui}`;
+
+      if (body.length > 0) {
+        docContents.push(`${title}:\n${stripHtml(body)}`);
+        sources.push({ title, url: webUrl });
+      }
+    }
+
+    if (docContents.length === 0) {
+      console.log("No content in documents.");
+      return null;
+    }
+
+    return {
+      combinedContent: docContents.join('\n\n---\n\n'),
+      sources
+    };
+
+  } catch (error) {
+    console.error("Error during Confluence fetch:", error);
+    return null;
+  }
+}
+
+function stripHtml(html) {
+  return html.replace(/<[^>]+>/g, '');
+}
+
+// Full process for getting response from OpenAI and Confluence
+async function runQuery(userMessage) {
+  const tags = await determineRelevantTags(userMessage);
   if (tags.length === 0) {
     console.log("No tags found. Exiting.");
     return;
   }
-  console.log("Tags identified:", tags.join(", "));
 
-  // console.log("\nStep 2: Fetching Confluence documents...");
   const { combinedContent, sources } = await fetchConfluenceDocsWithMeta(tags);
   if (!combinedContent) {
     console.log("No documents found for these tags. Exiting.");
     return;
   }
-  console.log(`Retrieved ${sources.length} document(s) from Confluence.`);
 
-  // console.log("\nStep 3: Sending documents + question to OpenAI for final response...");
-  const finalAnswer = await fetchOpenAIResponse(question, combinedContent);
-  console.log("\nFinal Answer:\n");
-  console.log(finalAnswer);
+  const prompt = `User question: ${userMessage}\n\nRelevant documents:\n${combinedContent}\n\nProvide a short and concise answer based only on these documents. 1-4 sentences. Include the titles of all documents used to form this answer.`;
 
-  console.log("Sources:");
-  sources.forEach((src, i) => {
-    console.log(`${i + 1}. ${src.title}: ${src.url}`);
-  });
-  
+  const payload = {
+    model: 'gpt-4o',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a helpful assistant providing clear answers based on provided documents only.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ]
+  };
 
-  console.log("\n query complete.\n");
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer your-openai-api-key`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      console.error("Error calling OpenAI (final response):", response.status, response.statusText);
+      return "There was an issue generating a response.";
+    }
+
+    const data = await response.json();
+    const finalAnswer = data.choices[0]?.message?.content || "I couldn't generate a response.";
+    return {
+      answer: finalAnswer,
+      sources
+    };
+
+  } catch (error) {
+    console.error("Error during OpenAI response:", error);
+    return { answer: "There was an issue retrieving a response." };
+  }
 }
-
