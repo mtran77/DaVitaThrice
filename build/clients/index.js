@@ -1,3 +1,4 @@
+import runQuery from './aiquery.js'
 // const EmployeeSelectorBtn = document.querySelector('#Employee-selector')
 // const DaVitaGPTSelectorBtn = document.querySelector('#DaVitaGPT-selector')
 const chatHeader = document.querySelector('.chat-header')
@@ -73,6 +74,8 @@ const sendMessage = (e) => {
 
   // Scroll to bottom of chat messages 
   chatMessages.scrollTop = chatMessages.scrollHeight
+
+  runQuery(message);
 }
 
 chatInputForm.addEventListener('submit', sendMessage)
