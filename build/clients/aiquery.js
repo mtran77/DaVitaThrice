@@ -106,11 +106,14 @@ function stripHtml(html) {
 
 // Full process for getting response from OpenAI and Confluence
 async function runQuery(userMessage) {
+  //tester 
+  console.log(userMessage)
+
   const tags = await determineRelevantTags(userMessage);
-  if (tags.length === 0) {
-    console.log("No tags found. Exiting.");
-    return;
-  }
+  // if (tags.length === 0) {
+  //   console.log("No tags found. Exiting.");
+  //   return;
+  // }
 
   const { combinedContent, sources } = await fetchConfluenceDocsWithMeta(tags);
   if (!combinedContent) {

@@ -114,7 +114,7 @@ const sendMessage = async (e) => {
       timestamp,
     });
 
-    // Show sources (optional)
+    // Show sources
     response.sources.forEach(src => {
       console.log(`Source: ${src.title} - ${src.url}`);
     });
