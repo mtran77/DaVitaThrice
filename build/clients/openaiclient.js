@@ -1,8 +1,5 @@
 // for handling OpenAI API Calls
 //_______________________
-//local testing purposes
-//import fetch from 'node-fetch';
-//____________________________
 
 import dotenv from 'dotenv';
 dotenv.config();
