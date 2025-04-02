@@ -1,4 +1,5 @@
-// server.mjs
+app.use(express.static('public'));
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';

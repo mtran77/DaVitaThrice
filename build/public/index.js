@@ -1,5 +1,7 @@
 // index.js
-import { runQuery } from './frontendApi.js';
+import { runQuery } from './frontendAPI.js';
+
+
 
 const chatHeader = document.querySelector('.chat-header')
 const chatMessages = document.querySelector('.chat-messages')
