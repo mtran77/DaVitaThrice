@@ -1,6 +1,7 @@
 // apiIntegration.mjs
+import { fetchConfluenceDocsWithMeta } from '../confluenceclient.js';
 import { determineRelevantTags, fetchOpenAIResponse } from '../clients/openaiclient.js';
-import { fetchConfluenceDocsWithMeta } from '../clients/confluenceclient.js';
+
 
 
 export async function runIntegrationTestForQuery(question) {
