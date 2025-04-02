@@ -1,7 +1,6 @@
 // apiIntegration.mjs
-import { fetchConfluenceDocsWithMeta } from '../confluenceclient.js';
-import { determineRelevantTags, fetchOpenAIResponse } from '../clients/openaiclient.js';
-
+import { fetchConfluenceDocsWithMeta } from '../API/confluenceclient.mjs';
+import { determineRelevantTags, fetchOpenAIResponse } from '../clients/openaiclient.mjs';
 
 
 export async function runIntegrationTestForQuery(question) {
@@ -19,6 +18,6 @@ export async function runIntegrationTestForQuery(question) {
 
   // Step 3: Send documents and question to OpenAI for the final answer
   const finalAnswer = await fetchOpenAIResponse(question, combinedContent);
-  
+
   return { answer: finalAnswer, sources };
 }
