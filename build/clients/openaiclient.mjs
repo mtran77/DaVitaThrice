@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+console.log("Loaded API Key:", OPENAI_API_KEY);
 console.log("Using OpenAI key:", OPENAI_API_KEY ? "Loaded" : "Missing");
 
 // approved tags (move to a config file or database later)
@@ -62,19 +63,38 @@ export async function determineRelevantTags(question) {
 
 //Use documents + question to generate final response
 export async function fetchOpenAIResponse(question, context) {
+  // edited to add error message per output instructions DS
+  // added additional 'no context' check DS
   if (!context) {
     console.log("No context provided. Skipping OpenAI response.");
-    return "No relevant documents found.";
-  }
+    return "I'm sorry, there are no documents that are relevant to the question in Confluence.";
+  }  
+// end error message edits DS
 
-  const prompt = `User question: ${question}\n\nRelevant documents:\n${context}\n\nProvide a short and concise answer based only on these documents. 1-4 sentences. Include the titles of all documents used to form this answer.`;
-
+// prompt edits below DS
+  const prompt = `
+  You are an assistant. Your job is to answer questions using only the provided documents. Follow these rules:
+  
+  - Be clear, concise (5 sentences maximum).
+  - Always cite the document title(s) and include a working link if possible.
+  - Do not answer questions if the context is not sufficient; instead, say: “I'm sorry, there are no documents that are relevant to the question in Confluence.”
+  - Do not make up information. Do not use outside knowledge.
+  - Format like this: Your answer, then below: [document name]\nLink to source: https://...\n
+  
+  Question: ${question}
+  
+  Documents:
+  ${context}
+  `;
+  // end prompt edits DS
   const payload = {
     model: 'gpt-4o',
     messages: [
       {
         role: 'system',
-        content: 'You are a helpful assistant providing clear answers based on provided documents only.'
+        // below edited for reinforcement DS
+        content: 'You are a helpful assistant named Danny. Only use the provided documents to answer. Limit the response to 5 sentences unless the question requires comparisons, quotes, or multi-step answers. Always include the document name and link used below your answer to the prompt.'
+        // end reinforcement edits DS
       },
       {
         role: 'user',

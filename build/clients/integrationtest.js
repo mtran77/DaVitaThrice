@@ -1,3 +1,4 @@
+//console.log("Loaded API Key:", OPENAI_API_KEY);
 import dotenv from 'dotenv';
 dotenv.config();
 
