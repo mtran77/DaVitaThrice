@@ -98,9 +98,7 @@ body {
     background-color: #414351;
   }
   
-  .gray-bg {
-    background-color: red;
-  }
+  .gray-bg {}
   
   .chat-input-form {
     max-width: 50.5em;
