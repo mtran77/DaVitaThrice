@@ -4,11 +4,11 @@
 //import fetch from 'node-fetch';
 //____________________________
 
-
 import dotenv from 'dotenv';
 dotenv.config();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+console.log("Loaded API Key:", OPENAI_API_KEY);
 console.log("Using OpenAI key:", OPENAI_API_KEY ? "Loaded" : "Missing");
 
 // approved tags (move to a config file or database later)
@@ -68,7 +68,7 @@ export async function determineRelevantTags(question) {
 export async function fetchOpenAIResponse(question, context) {
   // edited to add error message per output instructions DS
   // added additional 'no context' check DS
-  if (!context || context.trim() === "") {
+  if (!context) {
     console.log("No context provided. Skipping OpenAI response.");
     return "I'm sorry, there are no documents that are relevant to the question in Confluence.";
   }  
