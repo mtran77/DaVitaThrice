@@ -34,7 +34,7 @@ window.onload = () => {
   chatInput.value = '';
 };
 
-let messageSender = 'Employee';
+let messageSender = 'You';
 
 const sendMessage = async (e) => {
   e.preventDefault();
