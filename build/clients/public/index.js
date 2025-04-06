@@ -17,10 +17,21 @@ const createChatMessageElement = (message) => `
   </div>
 `;
 
+function addMessage(message) {
+  messages.push(message);
+  localStorage.setItem('messages', JSON.stringify(messages));
+  chatMessages.insertAdjacentHTML('beforeend', createChatMessageElement(message));
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 window.onload = () => {
+  chatMessages.innerHTML = '';
   messages.forEach((message) => {
-    chatMessages.innerHTML += createChatMessageElement(message);
+    chatMessages.insertAdjacentHTML('beforeend', createChatMessageElement(message));
   });
+  // onload scroll
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatInput.value = '';
 };
 
 let messageSender = 'Employee';
@@ -34,34 +45,31 @@ const sendMessage = async (e) => {
     hour12: true,
   });
 
-  const message = {
+  const userMessage = {
     sender: messageSender,
     text: chatInput.value,
     timestamp,
   };
 
-  messages.push(message);
-  localStorage.setItem('messages', JSON.stringify(messages));
-  chatMessages.innerHTML += createChatMessageElement(message);
+  addMessage(userMessage);
   chatInputForm.reset();
-  chatMessages.scrollTop = chatMessages.scrollHeight;
 
   try {
-    const response = await runQuery(message.text);
+    const response = await runQuery(userMessage.text);
 
-    chatMessages.innerHTML += createChatMessageElement({
+    const aiMessage = {
       sender: 'DaVitaGPT',
       text: response.answer,
       timestamp,
-    });
+    };
+
+    addMessage(aiMessage);
 
     if (response.sources) {
       response.sources.forEach((src) => {
         console.log(`Source: ${src.title} - ${src.url}`);
       });
     }
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
   } catch (error) {
     console.error('Error during query execution:', error);
   }
