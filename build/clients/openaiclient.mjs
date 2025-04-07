@@ -57,7 +57,15 @@ const normalize = str => str.trim().toLowerCase().replace(/\s+/g, '-');
 const extractedTags = data.choices[0].message.content
   .split(",")
   .map(tag => normalize(tag));
-const validTags = extractedTags.filter(tag => availableTags.includes(tag));
+// Fuzzy match each extracted tag to the most semantically similar allowed tag
+const matchTags = (tag) => {
+  const normalizedTag = tag.toLowerCase().replace(/\s+/g, '-');
+  return availableTags.find(availTag => 
+    availTag.includes(normalizedTag) || normalizedTag.includes(availTag)
+  );
+};
+
+const validTags = [...new Set(extractedTags.map(matchTags).filter(Boolean))];
     console.log("Relevant tags identified:", validTags);
     return validTags;
   } catch (error) {
