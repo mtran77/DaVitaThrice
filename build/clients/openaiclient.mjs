@@ -51,8 +51,13 @@ export async function determineRelevantTags(question) {
     }
 
     const data = await response.json();
-    const extractedTags = data.choices[0].message.content.split(",").map(tag => tag.trim());
-    const validTags = extractedTags.filter(tag => availableTags.includes(tag));
+// Helper to normalize tags: lowercase and replace spaces with dashes
+const normalize = str => str.trim().toLowerCase().replace(/\s+/g, '-');
+// Normalize extracted tags
+const extractedTags = data.choices[0].message.content
+  .split(",")
+  .map(tag => normalize(tag));
+const validTags = extractedTags.filter(tag => availableTags.includes(tag));
     console.log("Relevant tags identified:", validTags);
     return validTags;
   } catch (error) {
