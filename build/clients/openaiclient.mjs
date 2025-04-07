@@ -26,11 +26,11 @@ export async function determineRelevantTags(question) {
     messages: [
       {
         role: 'system',
-        content: 'Given a user question, return the most relevant tags from the provided list. Respond with a comma-separated list of tag names only.'
+        content: `You are an AI assistant that selects the most relevant tags for a question. You must choose ONLY from this list of tags: ${availableTags.join(", ")}. Your response must be a comma-separated list of only the tag names exactly as written.`
       },
       {
         role: 'user',
-        content: `User question: "${question}"\nAvailable tags: ${availableTags.join(", ")}\nWhich tags are relevant?`
+        content: `Question: "${question}"\nWhich tags are relevant?`
       }
     ]
   };
@@ -51,23 +51,13 @@ export async function determineRelevantTags(question) {
     }
 
     const data = await response.json();
-// Helper to normalize tags: lowercase and replace spaces with dashes
-const normalize = str => str.trim().toLowerCase().replace(/\s+/g, '-');
-// Normalize extracted tags
-const extractedTags = data.choices[0].message.content
-  .split(",")
-  .map(tag => normalize(tag));
-// Fuzzy match each extracted tag to the most semantically similar allowed tag
-const matchTags = (tag) => {
-  const normalizedTag = tag.toLowerCase().replace(/\s+/g, '-');
-  return availableTags.find(availTag => 
-    availTag.includes(normalizedTag) || normalizedTag.includes(availTag)
-  );
-};
-
-const validTags = [...new Set(extractedTags.map(matchTags).filter(Boolean))];
-    console.log("Relevant tags identified:", validTags);
-    return validTags;
+    const extractedTags = data.choices[0].message.content
+    .split(",")
+    .map(tag => tag.trim());
+  
+  console.log("Relevant tags identified:", extractedTags);
+  return extractedTags;
+  
   } catch (error) {
     console.error("Error in determineRelevantTags:", error);
     return [];
