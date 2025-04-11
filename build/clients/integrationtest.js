@@ -1,3 +1,5 @@
+// test created to test the interactions of openai and confluence during troubleshooting and debugging 
+
 import dotenv from 'dotenv';
 dotenv.config();
 

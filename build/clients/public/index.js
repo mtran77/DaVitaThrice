@@ -1,4 +1,4 @@
-// index.js
+// index.js - client side logic - handles user interactions, updates DOM and local storage of chat history
 import { runQuery } from './frontendAPI.js';
 
 const chatHeader = document.querySelector('.chat-header');

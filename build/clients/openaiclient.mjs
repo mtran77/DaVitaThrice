@@ -1,4 +1,5 @@
 // for handling OpenAI API Calls
+// sends prompts and generates responses. 
 //_______________________
 
 import dotenv from 'dotenv';
@@ -8,6 +9,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 console.log("Using OpenAI key:", OPENAI_API_KEY ? "Loaded" : "Missing");
 
 // approved tags (move to a config file or database later)
+// https://miscapstones25.atlassian.net/wiki/labels/listlabels-alphaview.action
 const availableTags = [
   "training", "compliance", "general-medical", "kidney-disease", 
   "kidney-dialysis", "medical-manual", "meeting_minutes", "scheduling"
@@ -18,7 +20,7 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-//Get relevant tags from OpenAI based on question
+// get *relevant* tags from OpenAI based on question
 export async function determineRelevantTags(question) {
   const payload = {
     model: 'gpt-4o',

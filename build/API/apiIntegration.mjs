@@ -1,22 +1,23 @@
-// apiIntegration.mjs
+// apiIntegration.mjs - handles the integration logic between confluence and openai
+// processes user queries
 import { fetchConfluenceDocsWithMeta } from '../API/confluenceclient.mjs';
 import { determineRelevantTags, fetchOpenAIResponse } from '../clients/openaiclient.mjs';
 
 
 export async function runIntegrationTestForQuery(question) {
-  // Step 1: Determine relevant tags
+  // determine relevant tags
   const tags = await determineRelevantTags(question);
   if (tags.length === 0) {
     return { error: "No relevant tags found." };
   }
 
-  // Step 2: Fetch Confluence documents
+  // retrieve confluence documents
   const { combinedContent, sources } = await fetchConfluenceDocsWithMeta(tags);
   if (!combinedContent) {
     return { error: "No documents found for these tags." };
   }
 
-  // Step 3: Send documents and question to OpenAI for the final answer
+  // send documents and question to OpenAI for the final answer
   const finalAnswer = await fetchOpenAIResponse(question, combinedContent);
 
   return { answer: finalAnswer, sources };
