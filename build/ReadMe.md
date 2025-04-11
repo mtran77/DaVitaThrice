@@ -10,6 +10,7 @@ This version currently requires the following packages:
 -npm install -g http-server
 
 to get started: 
+-update tag list in openaiclient.mjs
 -cd build
 -node server.mjs
 -open your browser and enter http://localhost:3000
